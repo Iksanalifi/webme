@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UJIKOM</title>
+    <style>
+@media (max-width: 768px) {
+    nav {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    nav a {
+        display: block;
+        margin: 5px 0; /* Jarak antar menu */
+    }
+
+    .led {
+        flex-direction: row; /* Susun LED ke bawah */
+    }
+
+    .checkbox-wrapper-36 label {
+        width: 80px; /* Ukuran lebih kecil */
+    } 
+
+    .widget {
+        width: 95%;
+        height: auto;
+    }
+}
+
+
+
+         .checkbox-wrapper-36 *,
+    .checkbox-wrapper-36 *::before,
+    .checkbox-wrapper-36 *::after {
+      box-sizing: border-box;
+    }
+  
+    .checkbox-wrapper-36 label {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0px 50px 20px 0 rgba(0,0,0,0.1);
+      display: flex;
+      height: 50px;
+      padding: 8px;
+      position: relative;
+      transition: transform 300ms ease, box-shadow 300ms ease;
+      width: 116px;
+    }
+  
+    .checkbox-wrapper-36 input {
+      display: none;
+    }
+  
+    .checkbox-wrapper-36 label:after {
+      animation: move-left-36 400ms;
+      background: #E2E2E2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='27' height='27' viewBox='0 0 24 24'%3E%3Cpath stroke='#E2E2E2' fill='#E2E2E2' stroke-linecap='round' d='M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z'/%3E%3C/svg%3E") no-repeat center;
+      border-radius: 12px;
+      content: '';
+      left: 8px;
+      outline: none;
+      position: absolute;
+      transition: background 100ms linear;
+      width: 36px;
+      height: 36px;
+      left: 8px;
+      top: 7px;
+    }
+  
+    .checkbox-wrapper-36 label:active {
+      box-shadow: 0px 10px 20px 0 rgba(0,0,0,0.2);
+      transform: scale(1.15);
+    }
+  
+    .checkbox-wrapper-36 input:checked + label:after {
+      animation: move-right-36 400ms;
+      background: #6EB54E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='27' height='27' viewBox='0 0 24 24'%3E%3Cpath stroke='white' fill='white' stroke-linecap='round' d='M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z'/%3E%3C/svg%3E") no-repeat center;
+      left: 72px;
+    }
+  
+    @keyframes move-right-36 {
+      0% {
+        left: 8px;
+      }
+      75% {
+        left: 78px;
+      }
+      100% {
+        left: 72px;
+      }
+    }
+  
+    @keyframes move-left-36 {
+      0% {
+        left: 72px;
+      }
+      75% {
+        left: 2px;
+      }
+      100% {
+        left: 8px;
+      }
+    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            text-align: center;
+            padding-bottom: 100px;
+        }
+
+        header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+        }
+
+        nav {
+            background: #0056b3;
+            padding: 10px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+        }
+
+
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        footer {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .widget {
+         position: absolute;
+         top: 50%;
+         left: 50%;
+         display: flex;
+         height: auto;
+         width: 90%;
+         max-width: 400px;
+         transform: translate(-50%, -50%);
+         flex-wrap: wrap;
+         cursor: pointer;
+         border-radius: 20px;
+         box-shadow: 0 27px 55px 0 rgba(0, 0, 0, 0.3),
+           0 17px 17px 0 rgba(0, 0, 0, 0.15);
+ 
+       }
+       .weatherIcon {
+           flex: 1 100%;
+           height: 60%;
+           border-top-left-radius: 20px;
+           border-top-right-radius: 20px;
+           background: #fafafa;
+           font-family: weathericons;
+           display: flex;
+           align-items: center;
+           justify-content: space-around;
+           font-size: 100px;
+       }
+         .weatherInfo {
+           flex: 0 0 70%;
+           height: 40%;
+           background: #080705;
+           border-bottom-left-radius: 20px;
+           display: flex;
+           align-items: center;
+           color: white;
+         }
+ 
+           .temperature {
+             flex: 0 0 40%;
+             width: 100%;
+             font-size: 65px;
+             display: flex;
+             justify-content: space-around;
+           }
+ 
+           .description {
+             flex: 0 60%;
+             display: flex;
+             flex-direction: column;
+             width: 100%;
+             height: 100%;
+             justify-content: center;
+           }
+             .weatherCondition {
+               text-transform: uppercase;
+               font-size: 35px;
+               font-weight: 100;
+             }
+             .place {
+               font-size: 15px;
+             }
+         .humid {
+           flex: 0 0 30%;
+           height: 40%;
+           background: #70c1b3;
+           border-bottom-right-radius: 20px;
+           display: flex;
+           justify-content: space-around;
+           align-items: center;
+           color: white;
+           font-size: 30px;
+           font-weight: 800;
+         }
+         p {
+         position: fixed;
+         bottom: 0%;
+         right: 2%;
+         }
+       a {
+           text-decoration: none;
+           color: #e4d6a7;
+           font-size: 10px;
+         }
+
+         .led {
+    position: relative;
+    bottom: 0; 
+    left: auto;
+    display: flex;
+    gap: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    justify-content: center; /* Menengahkan secara horizontal */
+    align-items: center; /* Menengahkan secara vertikal */
+    margin-bottom: 20px; 
+}
+
+
+        main {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Agar elemen tetap rata tengah */
+        }
+
+        .lamp-container {
+        display: flex;
+        justify-content: bottom;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .lampu {
+    width: 500px;
+    height: 500px;
+    right: 450px;
+    justify-content : center;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    footer {
+    background: #007bff;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 16px;
+    position: relative; /* Pastikan footer tetap pada layout normal */
+}
+
+footer p {
+    margin: 5px 0; /* Tambahkan jarak antar paragraf */
+}
+
+footer a {
+    color: #ffeb3b;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+
+p {
+    position: fixed;
+    bottom: 0%;
+    right: 2%;
+}
+
+
+
+    </style>
+</head>
+<body>
+
+    <header>Projek Ujikom</header>
+
+    <nav>
+        <a href="#widget">Suhu</a>
+        <a href="#led">led</a>
+        <a href="#">Kontak</a>
+        <a href="login.html">back</a>
+    </nav>
+    <main id="widget">
+        <div class="widget_container">
+            <article class="widget">
+                <div class="weatherIcon" id="weatherIcon"><i class="wi wi-night-sleet"></i></div>
+                <div class="weatherInfo">
+                    <div class="temperature" id="tempID"><span>0&deg;</span></div>
+                    <div class="description">
+                        <div class="weatherCondition" id="conditionID">Dingin</div>
+                        <div class="location" id="locationID">Tokyo, Jepang</div>
+                    </div>
+                </div>
+                <div class="humid" id="humidityID">75</div>
+            </article>
+        </div>
+    </main>
+    <main id="led">
+        <div class="lamp-container">
+            <div id="lampu" class="lampu"></div> <!-- Lampu -->
+        </div>
+        <div class="led">
+            <div class="checkbox-wrapper-36">
+                <input id="toggle-36" type="checkbox" onclick="toggleLED(1)">
+                <label for="toggle-36"></label>
+            </div>
+            <div class="checkbox-wrapper-36">
+                <input id="toggle-37" type="checkbox" onclick="toggleLED(2)">
+                <label for="toggle-37"></label>
+            </div>
+            <div class="checkbox-wrapper-36">
+                <input id="toggle-38" type="checkbox" onclick="toggleLED(3)">
+                <label for="toggle-38"></label>
+            </div>
+        </div>
+    </main>
+
+
+    <footer>
+        <p>&copy; 2024 Projek Ujikom. All Rights Reserved.</p>
+        <p>Kontak: <a href="mailto:example@email.com">example@email.com</a> | 
+           WhatsApp: <a href="https://wa.me/6281234567890">+62 812-3456-7890</a></p>
+    </footer>
+
+    
+    
+
+
+          
+</body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="module">
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import {getDatabase, ref, onValue, set} from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyDPhPWkSWO4L0JfDQ-vIjecx_B8zGrryYY",
+    authDomain: "latihanukk1-bf0f8.firebaseapp.com",
+    databaseURL: "https://latihanukk1-bf0f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "latihanukk1-bf0f8",
+    storageBucket: "latihanukk1-bf0f8.firebasestorage.app",
+    messagingSenderId: "658977220314",
+    appId: "1:658977220314:web:b026f4f946aef792dc67e3"
+    };
+
+        function greet() {
+            alert("Halo! Terima kasih sudah berkunjung.");
+        }
+
+    //inisialize firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const LedRef = ref(db, 'dataLED');
+    const DhtRef = ref(db, 'dataDHT');
+    const UsRef = ref (db, 'dataUltrasonik');
+
+    let barTempValue = 20;
+    let temperature = 25; //var suhu
+    let humidity = 50; //var kelembapan
+
+    function updateWeatherCondition(tempValue){
+        const conditionElement = document.getElementById("conditionID");
+        if(tempValue < 20){
+            conditionElement.textContent = "Dingin";
+        }else if (tempValue >= 20 && tempValue <=30){
+            conditionElement.textContent = "Sedang";
+        }else if (tempValue >30){
+            conditionElement.textContent = "Panas";
+        }else{
+            conditionElement.textContent = "error";
+        }
+    }
+
+        function updateWeatherInfo(tempValue, humidityValue){
+        const temperatureElement = document.getElementById ("tempID");
+        const humidityElement = document.getElementById ("humidityID");
+        const weatherIconElement = document.getElementById ("weatherIcon");;
+
+        temperatureElement.innerHTML = `<span>${tempValue}&deg;</span>`;
+        humidityElement.textContent = `${humidityValue}%`;
+
+        //Ganti ikon berdasarkan kelembapan
+        let iconClass = "wi wi-alien"; //gambar default
+        if (humidityValue >= 0 && humidityValue <= 25){
+            iconClass = "wi wi-day-sunny";
+        }else if (humidityValue > 25 && humidityValue <= 50){
+            iconClass = "wi wi-day-cloudy";
+        }else if (humidityValue > 51 && humidityValue <= 75){
+            iconClass = "wi wi-hail";
+        } else if (humidityValue > 75 && humidityValue){
+            iconClass = "wi wi-rain";
+        }
+        //ganti Icon
+        weatherIconElement.innerHTML = `<i class =${iconClass}></i>`;
+        //ganti temp
+        updateWeatherCondition(tempValue);
+        //panggil
+        }
+         //ambil data DHT dari firebase
+  onValue(DhtRef, (snapshot)=>{
+    if (snapshot.exists()){
+      const data = snapshot.val();
+      temperature = data.temperature;
+      humidity = data.humid;
+      updateWeatherInfo(temperature,humidity);
+
+      console.log("temperature update:", temperature);
+      console.log("humidity update:", humidity);
+    } else {
+      console.log ("data dht eweh");
+    }
+
+  },(error)=> {
+    console.error("dht data error");
+  }
+);
+
+  //ambil ultrasonic
+  onValue(UsRef, (snapshot)=>{
+    if (snapshot.exists()){
+      const data = snapshot.val();
+      barTempValue = data.jarak;
+
+      console.log("distance update:", barTempValue);
+      const barTempElement = document.querySelector(".bar_percent");
+  barTempElement.style.setProperty("--num", barTempValue);
+  const percentageElement = document.getElementById("tempvalue");
+  percentageElement.textContent = `${barTempValue} Cm`;
+    } else {
+      console.log("data ultrasonik eweh");
+    }
+  }, (error)=> {
+    console.error("ultrasonk data error")
+  });
+
+  onValue(LedRef, (sanpshot)=>{
+    if (snapshot.exists()){
+      const led = snapshot.val();
+      Object.keys(led).forEach((key,index) => {
+        document.getElementById(`checkbox${index+1}`).checked = led[key] === 1;
+      });
+      console.log("LED status updated:", Object.values(led));
+    }}
+  );
+
+  updateWeatherInfo(temperature, humidity);
+
+  window.toggleLED = () =>{
+      const ledState = [1,2,3].map (i => document.getElementById(`checkbox${i}`).checked? 1:0);
+      set (LedRef, {
+        led1: ledState[0],
+        led2: ledState[1],
+        led3: ledState[2]
+      }). then(()=> console.log("led state updated"))
+      .catch(()=> console.log("failed to updated"));
+    }
+
+    </script>
+</html>
