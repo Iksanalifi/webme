@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kontrol LED Interaktif</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7f9;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .label {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 1.8em;
+      color: #3498db;
+      margin-bottom: 10px;
+    }
+
+    .led-indicator {
+      width: 40px;
+      height: 40px;
+      margin: 10px auto;
+      border-radius: 50%;
+      background-color: red;
+      transition: background-color 0.3s;
+    }
+
+    .led-on {
+      background-color: green !important;
+    }
+
+    .led-button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .led-button.active {
+      background-color: #27ae60;
+    }
+
+    .led-button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kontrol LED Interaktif</h1>
+  <div class="container">
+    <table>
+      <tr>
+        <td>LED 1</td>
+        <td>:</td>
+        <td><input type="checkbox" id="lampu1" onclick="toggleLED()"></td>
+      </tr>
+      <tr>
+        <td>LED 2</td>
+        <td>:</td>
+        <td><input type="checkbox" id="lampu2" onclick="toggleLED()"></td>
+      </tr>
+      <tr>
+        <td>LED 3</td>
+        <td>:</td>
+        <td><input type="checkbox" id="lampu3" onclick="toggleLED()"></td>
+      </tr>
+    </table>
+
+    <!-- Suhu -->
+    <div class="card">
+      <div class="label">Suhu</div>
+      <div id="suhu" class="value">--°C</div>
+    </div>
+
+    <!-- Kelembapan -->
+    <div class="card">
+      <div class="label">Kelembapan</div>
+      <div id="kelembapan" class="value">--%</div>
+    </div>
+
+    <!-- Jarak -->
+    <div class="card">
+      <div class="label">Jarak</div>
+      <div id="jarak" class="value">-- cm</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfG8u7PEiJ7404Es1e-ID7rTg2NqWFxmc",
+      authDomain: "ujikom-dc2c3.firebaseapp.com",
+      databaseURL: "https://ujikom-dc2c3-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ujikom-dc2c3",
+      storageBucket: "ujikom-dc2c3.appspot.com",
+      messagingSenderId: "266826669238",
+      appId: "1:266826669238:web:db946cffa3df7e37f65a17"
+    };
+
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const ledRef = ref(database, "dataled");
+    const dhtRef = ref(database, "dataDHT");
+    const usRef = ref(database, "dataUltrasonik");
+
+    // Fungsi toggleLED untuk menyimpan status LED ke Firebase
+    function toggleLED() {
+      const led1 = document.getElementById("lampu1").checked ? 1 : 0;
+      const led2 = document.getElementById("lampu2").checked ? 1 : 0;
+      const led3 = document.getElementById("lampu3").checked ? 1 : 0;
+
+      const ledData = {
+        led1,
+        led2,
+        led3
+      };
+
+      set(ledRef, ledData);
+    }
+
+    // Update suhu dan kelembapan
+    function updateWeather(tempValue, humidValue) {
+      document.getElementById("suhu").textContent = `${tempValue}°C`;
+      document.getElementById("kelembapan").textContent = `${humidValue}%`;
+    }
+
+    // Mendengarkan perubahan status LED dari Firebase
+    onValue(ledRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        document.getElementById("lampu1").checked = data.led1 === 1;
+        document.getElementById("lampu2").checked = data.led2 === 1;
+        document.getElementById("lampu3").checked = data.led3 === 1;
+      }
+    });
+
+    // Mendengarkan perubahan data DHT (suhu dan kelembapan)
+    onValue(dhtRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        updateWeather(data.temperatur, data.humid);
+      }
+    });
+
+    // Mendengarkan perubahan data Ultrasonik (jarak)
+    onValue(usRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        document.getElementById("jarak").textContent = `${data.jarak} cm`;
+      }
+    });
+  </script>
+</body>
+</html>
