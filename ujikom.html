@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kontrol LED Interaktif</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7f9;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .label {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 1.8em;
+      color: #3498db;
+      margin-bottom: 10px;
+    }
+
+    .led-indicator {
+      width: 40px;
+      height: 40px;
+      margin: 10px auto;
+      border-radius: 50%;
+      background-color: red;
+      transition: background-color 0.3s;
+    }
+
+    .led-on {
+      background-color: green !important;
+    }
+
+    .led-button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .led-button.active {
+      background-color: #27ae60;
+    }
+
+    .led-button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Kontrol LED Interaktif</h1>
+
+  <div class="container">
+    <!-- LED 1 -->
+    <div class="card">
+      <div class="label">LED 1</div>
+      <div id="led1" class="led-indicator"></div>
+      <button class="led-button" onclick="toggleLED('led1', this)">Nyalakan</button>
+    </div>
+
+    <!-- LED 2 -->
+    <div class="card">
+      <div class="label">LED 2</div>
+      <div id="led2" class="led-indicator"></div>
+      <button class="led-button" onclick="toggleLED('led2', this)">Nyalakan</button>
+    </div>
+
+    <!-- LED 3 -->
+    <div class="card">
+      <div class="label">LED 3</div>
+      <div id="led3" class="led-indicator"></div>
+      <button class="led-button" onclick="toggleLED('led3', this)">Nyalakan</button>
+    </div>
+
+    <!-- Suhu -->
+    <div class="card">
+      <div class="label">Suhu</div>
+      <div id="suhu" class="value">--°C</div>
+    </div>
+
+    <!-- Kelembapan -->
+    <div class="card">
+      <div class="label">Kelembapan</div>
+      <div id="kelembapan" class="value">--%</div>
+    </div>
+
+    <!-- Jarak -->
+    <div class="card">
+      <div class="label">Jarak</div>
+      <div id="jarak" class="value">-- cm</div>
+    </div>
+  </div>
+
+  <script>
+    // Fungsi toggle LED
+    function toggleLED(ledId, button) {
+      const led = document.getElementById(ledId);
+      led.classList.toggle('led-on');
+      button.classList.toggle('active');
+
+      if (button.classList.contains('active')) {
+        button.textContent = 'Matikan';
+      } else {
+        button.textContent = 'Nyalakan';
+      }
+    }
+
+    // Simulasi update sensor
+    function updateSensorValues() {
+      const suhu = (Math.random() * (35 - 25) + 25).toFixed(1); // 25-35°C
+      const kelembapan = (Math.random() * (90 - 50) + 50).toFixed(1); // 50-90%
+      const jarak = Math.floor(Math.random() * (200 - 50) + 50); // 50-200 cm
+
+      document.getElementById("suhu").textContent = `${suhu}°C`;
+      document.getElementById("kelembapan").textContent = `${kelembapan}%`;
+      document.getElementById("jarak").textContent = `${jarak} cm`;
+    }
+
+    // Update setiap 2 detik
+    setInterval(updateSensorValues, 2000);
+    updateSensorValues(); // Panggil sekali saat load
+  </script>
+
+</body>
+</html>
