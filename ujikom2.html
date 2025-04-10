@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kontrol LED Interaktif</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7f9;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .label {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 1.8em;
+      color: #3498db;
+      margin-bottom: 10px;
+    }
+
+    .led-indicator {
+      width: 40px;
+      height: 40px;
+      margin: 10px auto;
+      border-radius: 50%;
+      background-color: red;
+      transition: background-color 0.3s;
+    }
+
+    .led-on {
+      background-color: green !important;
+    }
+
+    .led-button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .led-button.active {
+      background-color: #27ae60;
+    }
+
+    .led-button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kontrol LED Interaktif</h1>
+  <div class="container">
+    <table>
+        <tr>
+        <td>LED 1</td>
+        <td>:</td>
+        <td><input type="checkbox" onclick="toggleLED()" id="lampu1"></td>
+        </tr>
+
+        <tr>
+        <td>LED 2</td>
+        <td>:</td>
+        <td><input type="checkbox" onclick="toggleLED()"  id="lampu2"></td>
+        </tr>
+
+        <tr>
+        <td>LED 3</td>
+        <td>:</td>
+        <td><input type="checkbox" onclick="toggleLED()"  id="lampu3"></td>
+        </tr>
+    </table>
+
+
+    <!-- Suhu -->
+    <div class="card">
+      <div class="label">Suhu</div>
+      <div id="suhu" class="value">--°C</div>
+    </div>
+
+    <!-- Kelembapan -->
+    <div class="card">
+      <div class="label">Kelembapan</div>
+      <div id="kelembapan" class="value">--%</div>
+    </div>
+
+    <!-- Jarak -->
+    <div class="card">
+      <div class="label">Jarak</div>
+      <div id="jarak" class="value">-- cm</div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-polyfills/0.1.43/polyfill.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfG8u7PEiJ7404Es1e-ID7rTg2NqWFxmc",
+      authDomain: "ujikom-dc2c3.firebaseapp.com",
+      databaseURL: "https://ujikom-dc2c3-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ujikom-dc2c3",
+      storageBucket: "ujikom-dc2c3.appspot.com",
+      messagingSenderId: "266826669238",
+      appId: "1:266826669238:web:db946cffa3df7e37f65a17"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const ledRef = ref (db, dataled);
+    const DHTRef = ref (db, dataDHT);
+    const usRef = ref (db, dataUltrasonik);
+   
+ 
+db.on("value",function(data){
+    let datalampu1 = data.val()
+    let kondisi = datalampu1.led1
+    if (kondisi == 1){
+        $("#lampu1").attr("checked", true)
+    }
+
+    let datalampu2 = data.val()
+    let kondisi2 = datalampu2.led2
+    if (kondisi2 == 1){
+        $("#lampu2").attr("checked", true)
+    }
+
+    let datalampu3 = data.val()
+    let kondisi3 = datalampu3.led3
+    if (kondisi3 == 1){
+        $("#lampu3").attr("checked", true)
+    }
+})
+function toggleLED(){
+    let kondisi = []
+    for(let i = 1;i<=3;i++){
+        let checkbox = document.getElementById(`lampu${i}`)
+        kondisi[i-1] = checkbox.checked ? 1 : 0
+    }
+    console.log(kondisi)
+    simpanKeFirebase(kondisi[0],kondisi[1],kondisi[2])
+}
+function simpanKeFirebase(lampu1,lampu2,lampu3){
+    db.set({
+        led1:lampu1,
+        led2:lampu2,
+        led3:lampu3
+    })
+}
+// Fungsi untuk toggle LED dan simpan ke Firebase
+window.toggleLED = function (ledId, ledNumber, button) {
+    const ledElement = document.getElementById(ledId);
+    const isOn = ledElement.classList.toggle('led-on');
+      button.classList.toggle('active');
+      button.textContent = isOn ? 'Matikan' : 'Nyalakan';
+      
+    };
+    window.toggleLED = toggleLED;
+  </script>
+</body>
+</html>
