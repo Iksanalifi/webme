@@ -1,0 +1,97 @@
+#include <DHT.h>
+
+// Definisi pin
+#define LED1 D1
+#define LED2 D2
+#define LED3 D3
+
+#define DHTPIN D4        // Pin data DHT11
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+// Pin Ultrasonik
+#define TRIG_PIN D5
+#define ECHO_PIN D6
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+
+  // Setup pin LED
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+
+  // Setup pin Ultrasonik
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+}
+
+void loop() {
+  // Baca suhu dan kelembapan
+  float suhu = dht.readTemperature();
+  float kelembapan = dht.readHumidity();
+
+  // Cek validitas
+  if (isnan(suhu) || isnan(kelembapan)) {
+    Serial.println("Gagal membaca dari sensor DHT!");
+    return;
+  }
+
+  // Log ke serial
+  Serial.print("Suhu: ");
+  Serial.print(suhu);
+  Serial.print(" °C, Kelembapan: ");
+  Serial.print(kelembapan);
+  Serial.println(" %");
+
+  // Kontrol LED berdasarkan suhu dan kelembapan
+  digitalWrite(LED1, suhu > 30 ? HIGH : LOW);
+  digitalWrite(LED2, kelembapan > 60 ? HIGH : LOW);
+
+  // Hitung jarak dari sensor ultrasonik
+  long durasi;
+  float jarak;
+
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  durasi = pulseIn(ECHO_PIN, HIGH);
+  jarak = durasi * 0.034 / 2;
+
+  Serial.print("Jarak: ");
+  Serial.print(jarak);
+  Serial.println(" cm");
+
+  // LED3 menyala jika jarak < 10 cm
+  digitalWrite(LED3, jarak < 10 ? HIGH : LOW);
+
+  delay(1000); // Delay 1 detik
+}
+
+
+
+
+
+
+
+
+
+
+
+
+#ifndef SECRET_H
+#define SECRET_H
+
+// Ganti dengan data WiFi kamu
+#define WIFI_SSID "Nama_WiFi"
+#define WIFI_PASSWORD "Password_WiFi"
+
+// Kalau kamu pakai API key, tambahkan juga di sini
+//#define API_KEY "Isi_API_Key"
+
+#endif
+
