@@ -1,0 +1,377 @@
+#include "secrets.h"
+#include <Firebase.h>
+#include <ArduinoJson.h>
+#include "DHT.h"
+
+#define triggerPin D8
+#define echoPin D7
+
+#define DHTPIN D4   
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+Firebase fb(REFERENCE_URL);
+
+#define  led1 D3
+#define  led2 D5
+#define  led3 D6
+
+int stled1 = 0;
+int stled2 = 0;
+int stled3 = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+
+  //Sensor us jarak
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  /* Connect to WiFi */
+  Serial.println();
+  Serial.println();
+  Serial.print("Connecting to: ");
+  Serial.println(WIFI_SSID);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print("-");
+    delay(500);
+  }
+  
+  Serial.println();
+  Serial.println("WiFi Connected");
+  
+  #if defined(ARDUINO_UNOWIFIR4)
+    digitalWrite(LED_BUILTIN, HIGH);
+  #endif
+  
+  StaticJsonDocument<200> docOutput;
+  
+  // Pengaturan awal lampu pada posisi mati semua
+  docOutput["led1"] = 0;
+  docOutput["led2"] = 0;
+  docOutput["led3"] = 0;
+  
+  String output;
+  
+  serializeJson(docOutput, output);
+  fb.setJson("dataLED", output);
+ 
+  // Pembacaan Data Dari Firebase
+  String input = fb.getJson("dataLED");
+ 
+  if (input == "NULL") {
+    Serial.println("Tidak Dapat Mengambil Data Dari Firebase");
+  } else {
+    // Membaca data kedalam array (larik)
+    StaticJsonDocument<200> docInput;
+
+    // Deserialize the JSON string into the JSON document
+    DeserializationError error = deserializeJson(docInput, input);
+
+    if (error) {
+      Serial.print("Gagal Ekstrak Data: ");
+      Serial.println(error.c_str());
+      return;
+    }
+
+    // Extract the values from the deserialized JSON document
+    stled1 = docInput["led1"];               // 0/1
+    stled2 = docInput["led2"];               // 0/1
+    stled3 = docInput["led3"];               // 0/1
+    
+    /* Print the deserialized input */
+    Serial.print("Status LED 1:\t");
+    Serial.println(stled1);
+    Serial.print("Status LED 2:\t");
+    Serial.println(stled2);
+    Serial.print("Status LED 3:\t");
+    Serial.println(stled3);
+
+    digitalWrite(led1, stled1);
+    digitalWrite(led2, stled2);
+    digitalWrite(led3, stled3);
+  }
+  dht.begin();
+}
+
+void loop() {
+  int h = dht.readHumidity();
+  int t = dht.readTemperature();
+
+   // Check if any reads failed and exit early (to try again).
+  if (isnan(h) || isnan(t)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+  StaticJsonDocument<200> docOutput;
+
+  // Kirim data suhu dan kelembapan ke Firebase
+  docOutput["temperatur"] = t;
+  docOutput["humid"] = h;
+
+  String output;
+  serializeJson(docOutput, output);
+  fb.setJson("dataDHT", output); // Ganti dengan path yang sesuai di Firebase
+
+    Serial.print(F("Humidity: "));
+    Serial.print(h);
+    Serial.print(F("%  Temperature: "));
+    Serial.print(F("°C "));
+    Serial.print(F("°F  Heat index: "));
+    Serial.print(F("°C "));
+    Serial.println(F("°F"));
+  
+  long duration, jarak; 
+  // Pembacaan jarak dari sensor ultrasonik
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  jarak = (duration/2) /29.1; // Menghitung jarak dalam cm
+
+   // Kirim data jarak ke Firebase
+  StaticJsonDocument<200> docOutputUs;
+  docOutputUs["jarak"] = jarak; 
+  String outputUs;
+  serializeJson(docOutputUs, outputUs);
+  fb.setJson("dataUltrasonik", outputUs);
+
+  Serial.println("jarak :");
+    Serial.print (jarak);
+    Serial.println(" cm");
+    
+  // Pembacaan Data Dari Firebase untuk LED
+  String input = fb.getJson("dataLED");
+ 
+  if (input == "NULL") {
+    Serial.println("Tidak Dapat Mengambil Data Dari Firebase");
+  } else {
+    // Membaca data kedalam array
+    StaticJsonDocument<200> docInput;
+
+    // Deserialize the JSON string into the JSON document
+    DeserializationError error = deserializeJson(docInput, input);
+
+    if (error) {
+      Serial.print("Gagal Ekstrak Data: ");
+      Serial.println(error.c_str());
+      return;
+    }
+
+    // Extract the values from the deserialized JSON document
+    stled1 = docInput["led1"];               // 0/1
+    stled2 = docInput["led2"];               // 0/1
+    stled3 = docInput["led3"];               // 0/1
+    
+    /* Print the deserialized input */
+    Serial.print("Status LED 1:\t");
+    Serial.println(stled1);
+    Serial.print("Status LED 2:\t");
+    Serial.println(stled2);
+    Serial.print("Status LED 3:\t");
+    Serial.println(stled3);
+
+    digitalWrite(led1, stled1);
+    digitalWrite(led2, stled2);
+    digitalWrite(led3, stled3);
+  }
+  // Delay untuk menghindari pembacaan yang terlalu cepat
+delay(200);
+}#include "secrets.h"
+#include <Firebase.h>
+#include <ArduinoJson.h>
+#include "DHT.h"
+
+#define triggerPin D8
+#define echoPin D7
+
+#define DHTPIN D4   
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+Firebase fb(REFERENCE_URL);
+
+#define  led1 D3
+#define  led2 D5
+#define  led3 D6
+
+int stled1 = 0;
+int stled2 = 0;
+int stled3 = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+
+  //Sensor us jarak
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  /* Connect to WiFi */
+  Serial.println();
+  Serial.println();
+  Serial.print("Connecting to: ");
+  Serial.println(WIFI_SSID);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print("-");
+    delay(500);
+  }
+  
+  Serial.println();
+  Serial.println("WiFi Connected");
+  
+  #if defined(ARDUINO_UNOWIFIR4)
+    digitalWrite(LED_BUILTIN, HIGH);
+  #endif
+  
+  StaticJsonDocument<200> docOutput;
+  
+  // Pengaturan awal lampu pada posisi mati semua
+  docOutput["led1"] = 0;
+  docOutput["led2"] = 0;
+  docOutput["led3"] = 0;
+  
+  String output;
+  
+  serializeJson(docOutput, output);
+  fb.setJson("dataLED", output);
+ 
+  // Pembacaan Data Dari Firebase
+  String input = fb.getJson("dataLED");
+ 
+  if (input == "NULL") {
+    Serial.println("Tidak Dapat Mengambil Data Dari Firebase");
+  } else {
+    // Membaca data kedalam array (larik)
+    StaticJsonDocument<200> docInput;
+
+    // Deserialize the JSON string into the JSON document
+    DeserializationError error = deserializeJson(docInput, input);
+
+    if (error) {
+      Serial.print("Gagal Ekstrak Data: ");
+      Serial.println(error.c_str());
+      return;
+    }
+
+    // Extract the values from the deserialized JSON document
+    stled1 = docInput["led1"];               // 0/1
+    stled2 = docInput["led2"];               // 0/1
+    stled3 = docInput["led3"];               // 0/1
+    
+    /* Print the deserialized input */
+    Serial.print("Status LED 1:\t");
+    Serial.println(stled1);
+    Serial.print("Status LED 2:\t");
+    Serial.println(stled2);
+    Serial.print("Status LED 3:\t");
+    Serial.println(stled3);
+
+    digitalWrite(led1, stled1);
+    digitalWrite(led2, stled2);
+    digitalWrite(led3, stled3);
+  }
+  dht.begin();
+}
+
+void loop() {
+  int h = dht.readHumidity();
+  int t = dht.readTemperature();
+
+   // Check if any reads failed and exit early (to try again).
+  if (isnan(h) || isnan(t)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+  StaticJsonDocument<200> docOutput;
+
+  // Kirim data suhu dan kelembapan ke Firebase
+  docOutput["temperatur"] = t;
+  docOutput["humid"] = h;
+
+  String output;
+  serializeJson(docOutput, output);
+  fb.setJson("dataDHT", output); // Ganti dengan path yang sesuai di Firebase
+
+    Serial.print(F("Humidity: "));
+    Serial.print(h);
+    Serial.print(F("%  Temperature: "));
+    Serial.print(F("°C "));
+    Serial.print(F("°F  Heat index: "));
+    Serial.print(F("°C "));
+    Serial.println(F("°F"));
+  
+  long duration, jarak; 
+  // Pembacaan jarak dari sensor ultrasonik
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  jarak = (duration/2) /29.1; // Menghitung jarak dalam cm
+
+   // Kirim data jarak ke Firebase
+  StaticJsonDocument<200> docOutputUs;
+  docOutputUs["jarak"] = jarak; 
+  String outputUs;
+  serializeJson(docOutputUs, outputUs);
+  fb.setJson("dataUltrasonik", outputUs);
+
+  Serial.println("jarak :");
+    Serial.print (jarak);
+    Serial.println(" cm");
+    
+  // Pembacaan Data Dari Firebase untuk LED
+  String input = fb.getJson("dataLED");
+ 
+  if (input == "NULL") {
+    Serial.println("Tidak Dapat Mengambil Data Dari Firebase");
+  } else {
+    // Membaca data kedalam array
+    StaticJsonDocument<200> docInput;
+
+    // Deserialize the JSON string into the JSON document
+    DeserializationError error = deserializeJson(docInput, input);
+
+    if (error) {
+      Serial.print("Gagal Ekstrak Data: ");
+      Serial.println(error.c_str());
+      return;
+    }
+
+    // Extract the values from the deserialized JSON document
+    stled1 = docInput["led1"];               // 0/1
+    stled2 = docInput["led2"];               // 0/1
+    stled3 = docInput["led3"];               // 0/1
+    
+    /* Print the deserialized input */
+    Serial.print("Status LED 1:\t");
+    Serial.println(stled1);
+    Serial.print("Status LED 2:\t");
+    Serial.println(stled2);
+    Serial.print("Status LED 3:\t");
+    Serial.println(stled3);
+
+    digitalWrite(led1, stled1);
+    digitalWrite(led2, stled2);
+    digitalWrite(led3, stled3);
+  }
+  // Delay untuk menghindari pembacaan yang terlalu cepat
+delay(200);
+}
