@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+ <html lang="id">
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <title>Kontrol LED Interaktif</title>
+   <style>
+     body {
+       font-family: 'Segoe UI', sans-serif;
+       background: #ffffff;
+       padding: 20px;
+       color: #333;
+     }
+ 
+     h1 {
+       text-align: center;
+       color: #2c3e50;
+       margin-bottom: 30px;
+     }
+ 
+     .container {
+       max-width: 800px;
+       margin: auto;
+       display: grid;
+       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+       gap: 20px;
+     }
+ 
+     .card {
+       background: #ffffff;
+       border-radius: 10px;
+       padding: 20px;
+       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+       text-align: center;
+     }
+ 
+     .label {
+       font-weight: bold;
+       font-size: 1.1em;
+       margin-bottom: 10px;
+     }
+ 
+     .value {
+       font-size: 1.8em;
+       color: #3498db;
+       margin-bottom: 10px;
+     }
+ 
+     .led-indicator {
+       width: 40px;
+       height: 40px;
+       margin: 10px auto;
+       border-radius: 50%;
+       background-color: red;
+       transition: background-color 0.3s;
+     }
+ 
+     .led-on {
+       background-color: green !important;
+     }
+ 
+     .led-button {
+       background-color: #3498db;
+       color: white;
+       border: none;
+       padding: 10px 20px;
+       border-radius: 6px;
+       cursor: pointer;
+       transition: background-color 0.3s;
+     }
+ 
+     .led-button.active {
+       background-color: #27ae60;
+     }
+ 
+     .led-button:hover {
+       opacity: 0.9;
+     }
+   </style>
+ </head>
+ <body>
+   <h1>Kontrol LED Interaktif</h1>
+   <div class="container">
+     <table>
+       <tr>
+         <td>LED 1</td>
+         <td>:</td>
+         <td><input type="checkbox" id="checkbox1" onchange="toggleLED()"></td>
+       </tr>
+       <tr>
+         <td>LED 2</td>
+         <td>:</td>
+         <td><input type="checkbox" id="checkbox2" onchange="toggleLED()"></td>
+       </tr>
+       <tr>
+         <td>LED 3</td>
+         <td>:</td>
+         <td><input type="checkbox" id="checkbox3" onchange="toggleLED()"></td>
+       </tr>
+     </table>
+ 
+     <!-- Suhu -->
+     <div class="card">
+       <div class="label">suhu</div>
+       <div id="suhu" class="value">--°C</div>
+     </div>
+ 
+     <!-- Kelembapan -->
+     <div class="card">
+       <div class="label">kelembapan</div>
+       <div id="kelembapan" class="value">--%</div>
+     </div>
+ 
+     <!-- Jarak -->
+     <div class="card">
+       <div class="label">jarak</div>
+       <div id="jarak" class="value">--cm</div>
+     </div>
+   </div>
+ </body>
+ <script type="module">
+     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+     import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+   
+     const firebaseConfig = {
+   apiKey: "AIzaSyBbuXYDAP0NaXUw5p2vfnbLcFI0_DtBp2s",
+   authDomain: "ukk-02-01-0116-096-2.firebaseapp.com",
+   databaseURL: "https://ukk-02-01-0116-096-2-default-rtdb.asia-southeast1.firebasedatabase.app",
+   projectId: "ukk-02-01-0116-096-2",
+   storageBucket: "ukk-02-01-0116-096-2.firebasestorage.app",
+   messagingSenderId: "434243684831",
+   appId: "1:434243684831:web:f68cccfac24a0f875d1c6a"
+ };
+   
+     // Inisialisasi Firebase
+     const app = initializeApp(firebaseConfig);
+     const database = getDatabase(app);
+   
+     const ledRef = ref(database, "dataLED");
+     const dhtRef = ref(database, "dataDHT");
+     const usRef = ref(database, "dataUltrasonik");
+   
+     // Flag untuk membedakan update manual dan dari Firebase
+     let isManualUpdate = false;
+   
+     // Fungsi untuk update status LED ke Firebase
+     function toggleLED() {
+       isManualUpdate = true; // Ini untuk mencegah loop
+       const led1 = document.getElementById("led1").checked ? 1 : 0;
+       const led2 = document.getElementById("led2").checked ? 1 : 0;
+       const led3 = document.getElementById("led3").checked ? 1 : 0;
+   
+       const ledData = { led1, led2, led3 };
+       set(ledRef, ledData).then(() => {
+         isManualUpdate = false;
+       });
+     }
+     // Mendengarkan perubahan status LED
+     onValue(ledRef, (snapshot) => {
+     if (snapshot.exists()) {
+       const led = snapshot.val();
+       document.getElementById("checkbox1").checked = led.led1 === 1;
+       document.getElementById("checkbox2").checked = led.led2 === 1;
+       document.getElementById("checkbox3").checked = led.led3 === 1;
+       console.log("Status LED diperbarui dari Firebase:", led);
+     } else {
+       console.log("Data LED tidak ditemukan");
+     }
+   });
+   
+   //dht
+   onValue(
+ 
+ dhtRef,
+
+ (snapshot) => {
+
+   if (snapshot.exists()) {
+
+     const data = snapshot.val();
+
+     let temperature  = data.temperature;
+
+     let humid = data.humid;
+
+     console.log("Temperature update:", temperature);
+
+     console.log("Humidity update:", humid);
+
+     updateWeather(temperature, humid);
+
+   } else {
+
+     console.log("Data DHT tidak ditemukan");
+
+   }
+
+ },
+
+ (error) => {
+
+   console.log("Error membaca data DHT:", error);
+
+ }
+
+);
+
+   
+     // Mendengarkan perubahan jarak
+     onValue(usRef, (snapshot) => {
+ 
+ if (snapshot.exists()) {
+
+   const data = snapshot.val();
+
+   console.log("Jarak berubah:", data.jarak);
+
+
+
+   const barPercentElement = document.querySelector(".bar_percent");
+
+   if (barPercentElement) {
+
+     barPercentElement.style.setProperty("--num", data.jarak);
+
+   }
+
+
+
+   const percentageElement = document.getElementById("nilaisuhu");
+
+   if (percentageElement) {
+
+     percentageElement.textContent = `${data.jarak} Cm`;
+
+   }
+
+ } else {
+
+   console.log("Data Ultrasonic tidak ditemukan");
+
+ }
+
+});
+     
+   // Fungsi untuk mengontrol LED dari checkbox
+   window.toggleLED = () => {
+     const led1 = document.getElementById("checkbox1").checked ? 1 : 0;
+     const led2 = document.getElementById("checkbox2").checked ? 1 : 0;
+     const led3 = document.getElementById("checkbox3").checked ? 1 : 0;
+ 
+     const ledState = { led1, led2, led3 };
+ 
+     set(ledRef, ledState)
+       .then(() => console.log("LED state updated in Firebase"))
+       .catch(() => console.log("Gagal memperbarui status LED"));
+   };
+ 
+ 
+   </script>
+   
+ </html>
