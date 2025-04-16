@@ -1,0 +1,125 @@
+#include "secrets.h"
+#include <Firebase.h>
+#include <ArduinoJson.h>
+#include <DHT.h>
+
+#define ledstate1 D1
+#define ledstate2 D2
+#define ledstate3 D3
+
+#define DHTPIN D4
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+#define TRIG_PIN D7
+#define ECHO_PIN D8
+
+Firebase fb(REFERENCE_URL);
+
+void konekwifi() {
+  Serial.begin(115200);
+  WiFi.disconnect();
+  delay(1000);
+
+  Serial.print("Connecting to: ");
+  Serial.println(WIFI_SSID);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println("WiFi Connected!");
+}
+
+void setup() {
+  konekwifi();
+
+  pinMode(ledstate1, OUTPUT);
+  pinMode(ledstate2, OUTPUT);
+  pinMode(ledstate3, OUTPUT);
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  dht.begin();
+
+  // Inisialisasi nilai LED dan sensor ke Firebase
+  StaticJsonDocument<200> docLED;
+  docLED["led1"] = 0;
+  docLED["led2"] = 0;
+  docLED["led3"] = 0;
+  String ledInit;
+  serializeJson(docLED, ledInit);
+  fb.setJson("dataLED", ledInit);
+
+  StaticJsonDocument<200> docDHT;
+  docDHT["temperature"] = 0.0;
+  docDHT["humidity"] = 0.0;
+  String dhtInit;
+  serializeJson(docDHT, dhtInit);
+  fb.setJson("dataDHT", dhtInit);
+
+  StaticJsonDocument<200> docUs;
+  docUs["jarak"] = 0;
+  String usInit;
+  serializeJson(docUs, usInit);
+  fb.setJson("dataUltrasonic", usInit);
+}
+
+void loop() {
+  // --- BACA DHT ---
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  if (!isnan(temperature) && !isnan(humidity)) {
+    StaticJsonDocument<200> docSensor;
+    docSensor["temperature"] = temperature;
+    docSensor["humidity"] = humidity;
+    String sensorData;
+    serializeJson(docSensor, sensorData);
+    fb.setJson("dataDHT", sensorData);
+
+    Serial.print("Suhu: ");
+    Serial.print(temperature);
+    Serial.print(" °C, Kelembapan: ");
+    Serial.println(humidity);
+  }
+
+  // --- BACA ULTRASONIC ---
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  float distance = (duration / 2.0) / 29.1;
+
+  StaticJsonDocument<200> docUs;
+  docUs["jarak"] = distance;
+  String usData;
+  serializeJson(docUs, usData);
+  fb.setJson("dataUltrasonic", usData);
+
+  Serial.print("Jarak: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // --- BACA STATUS LED DARI FIREBASE ---
+  String input = fb.getJson("dataLED");
+  if (input != "NULL") {
+    StaticJsonDocument<200> docInput;
+    if (!deserializeJson(docInput, input)) {
+      int lampu1 = docInput["led1"];
+      int lampu2 = docInput["led2"];
+      int lampu3 = docInput["led3"];
+
+      digitalWrite(ledstate1, lampu1);
+      digitalWrite(ledstate2, lampu2);
+      digitalWrite(ledstate3, lampu3);
+    }
+  }
+
+  delay(2000); // jeda antar pembacaan
+}
