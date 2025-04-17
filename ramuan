@@ -1,0 +1,4 @@
+#define WIFI_SSID "all"
+#define WIFI_PASSWORD "barcacupu"
+
+#define REFERENCE_URL "https://ukk-02-01-0116-096-2-default-rtdb.asia-southeast1.firebasedatabase.app/"
